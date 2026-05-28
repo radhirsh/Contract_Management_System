@@ -1,6 +1,7 @@
 # ContractOS – Contract Management System
 
 A full-stack, production-ready Django-based Contract Management System for managing contracts, clauses, users, audit logs, redline suggestions, SharePoint sync, and more.
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/651bdb86-e6f3-464a-a4cd-36113a512b28" />
 
 ---
 
