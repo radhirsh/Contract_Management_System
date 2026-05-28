@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <div>
+        <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Clause Repository</h1>
+        <p class="panel-note" style="margin:6px 0 0;">Manage standard clauses, risks, and AI recommendations in one place.</p>
+    </div>
+    <div class="toolbar-actions">
+        <a class="quick-action" href="{% url 'clause_add' %}" style="text-decoration:none;">+ Add Clause</a>
+        <a class="quick-action quick-action-alt" href="{% url 'clause_upload' %}" style="text-decoration:none;">Upload Clause</a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card table-wrap">
+    <table class="app-table clause-table">
+        <thead>
+            <tr>
+                <th>Clause Category</th>
+                <th>Clause Name</th>
+                <th>Mandatory</th>
+                <th>Risk Level</th>
+                <th>Standard Rule / Value</th>
+                <th>Restricted Terms / Conditions</th>
+                <th>Deviation Rule</th>
+                <th>AI Recommendation</th>
+                <th>Escalation Required</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for clause in clauses %}
+            <tr>
+                <td>{{ clause.category }}</td>
+                <td>{{ clause.name }}</td>
+                <td>
+                    <select class="clause-select" disabled>
+                        <option value="Yes" {% if clause.mandatory %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if not clause.mandatory %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="clause-select" disabled>
+                        <option value="Low" {% if clause.risk_level == 'Low' %}selected{% endif %}>Low</option>
+                        <option value="Medium" {% if clause.risk_level == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="High" {% if clause.risk_level == 'High' %}selected{% endif %}>High</option>
+                    </select>
+                </td>
+                <td>{{ clause.standard_rule|default:"No standard rule provided" }}</td>
+                <td>{{ clause.restricted_terms|default:"No restricted terms provided" }}</td>
+                <td>{{ clause.deviation_rule|default:"No deviation rule provided" }}</td>
+                <td>{{ clause.ai_recommendation|default:"No AI recommendation provided" }}</td>
+                <td>
+                    <select class="clause-select" disabled>
+                        <option value="Yes" {% if clause.escalation_required %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if not clause.escalation_required %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td class="clause-actions">
+                    <a class="action-btn action-btn-view" href="{% url 'clause_detail' clause.id %}">View</a>
+                    <a class="action-btn action-btn-edit" href="{% url 'clause_edit' clause.id %}">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

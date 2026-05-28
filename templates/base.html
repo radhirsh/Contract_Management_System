@@ -1,0 +1,408 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContractOS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20260520b">
+<style>
+
+html[data-theme="dark"] {
+    --bg-main: #090c14;
+    --bg-sidebar: #070a10;
+    --bg-card: #0a0d14;
+    --bg-card-soft: #0e1420;
+    --border: #1e2333;
+    --text-main: #f1f5f9;
+    --text-soft: #94a3b8;
+}
+
+html[data-theme="light"] {
+    --bg-main: #eef2f7;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-soft: #f7f9fc;
+    --border: #d7e0ea;
+    --text-main: #0f172a;
+    --text-soft: #334155;
+}
+
+body.app-body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    transition: all 0.3s ease;
+}
+
+.app-sidebar {
+    background: var(--bg-sidebar) !important;
+}
+
+.card,
+.stat-card,
+.kv-card,
+.topbar,
+.table-wrap,
+.search-shell,
+.user-tile {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border) !important;
+}
+
+.theme-toggle-btn {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+</style>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111111;
+            --card-color: #f5f5f5;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-color: #1f1f1f;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-sidebar,
+        .topbar,
+        .main-wrap,
+        .user-tile {
+            background-color: var(--card-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .theme-toggle-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #4f46e5;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        
+    </style>
+
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('appTheme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('appTheme', newTheme);
+        }
+    </script>
+</head>
+
+<body class="app-body">
+
+<div class="app-shell">
+
+    <button id="sidebarToggle" class="sidebar-toggle" type="button">
+        Menu
+    </button>
+
+    <aside id="appSidebar" class="app-sidebar">
+
+        <div class="brand-wrap">
+            <div class="brand-row">
+                <div class="brand-mark">C</div>
+
+                <div>
+                    <div class="brand-title">ContractOS</div>
+                    <div class="brand-sub">POC v1.0</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="side-nav">
+            <a class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                <span class="nav-icon">D</span>Dashboard
+            </a>
+
+            <a class="nav-link {% if active_nav == 'contracts' %}active{% endif %}" href="{% url 'contract_list' %}">
+                <span class="nav-icon">C</span>Contracts
+            </a>
+
+            <a class="nav-link {% if active_nav == 'clauses' %}active{% endif %}" href="{% url 'clause_list_web' %}">
+                <span class="nav-icon">L</span>Clause Repository
+            </a>
+
+            <a class="nav-link {% if active_nav == 'redline' %}active{% endif %}" href="{% url 'redline_recommendations' %}">
+                <span class="nav-icon">R</span>Redline Engine
+            </a>
+
+            <a class="nav-link {% if active_nav == 'comparison' %}active{% endif %}" href="{% url 'contract_comparisons' %}">
+                <span class="nav-icon">P</span>Contract Comparison
+            </a>
+
+            <a class="nav-link {% if active_nav == 'audit' %}active{% endif %}" href="{% url 'audit_log_list_web' %}">
+                <span class="nav-icon">A</span>Audit Logs
+            </a>
+
+           
+
+            <a class="nav-link {% if active_nav == 'sharepoint' %}active{% endif %}" href="{% url 'sharepoint_config_web' %}">
+                <span class="nav-icon">S</span>SharePoint
+            </a>
+
+            <a class="nav-link {% if active_nav == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}">
+                <span class="nav-icon">N</span>Notifications
+            </a>
+        </nav>
+
+        <div class="user-tile">
+            <div class="user-avatar">
+                {{ request.user.name|default:request.user.username|slice:':1'|upper }}
+            </div>
+
+            <div>
+                <div class="user-name">
+                    {{ request.user.name|default:request.user.username }}
+                </div>
+
+                <div class="user-role">
+                    {{ request.user.role|default:'User' }}
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <main class="main-wrap">
+
+        {% if active_nav == 'dashboard' %}
+        <div class="topbar">
+
+            <h1>Centralized visibility across your contract lifecycle</h1>
+
+            <div class="topbar-actions">
+
+                
+
+                <a class="quick-action"
+                   href="{% url 'contract_list' %}">
+                    Open Contracts
+                </a>
+
+            </div>
+        </div>
+        {% endif %}
+
+        <nav class="app-breadcrumbs" aria-label="Breadcrumb">
+            <a class="crumb-home" href="{% url 'dashboard' %}">
+                Dashboard
+            </a>
+
+            <span class="crumb-sep">/</span>
+
+            <button type="button"
+                    class="crumb-back"
+                    onclick="window.history.back();">
+                Back
+            </button>
+
+            <span id="dynamicBreadcrumbTrail"></span>
+        </nav>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<script>
+
+    function formatBreadcrumbLabel(segment) {
+
+        const aliases = {
+            contracts: 'Contracts',
+            clauses: 'Clauses',
+            comparisons: 'Comparisons',
+            sharepoint: 'SharePoint',
+            audit: 'Audit',
+            users: 'Users',
+            registration: 'Registration',
+            upload: 'Upload',
+            create: 'Create',
+            add: 'Add',
+            edit: 'Edit',
+            dashboard: 'Dashboard',
+            redline: 'Redline',
+            workbench: 'Workbench'
+        };
+
+        if (/^\d+$/.test(segment)) {
+            return 'Details';
+        }
+
+        if (aliases[segment]) {
+            return aliases[segment];
+        }
+
+        return segment
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, function(match) {
+                return match.toUpperCase();
+            });
+    }
+
+    function buildDynamicBreadcrumbs() {
+
+        const trail = document.getElementById('dynamicBreadcrumbTrail');
+
+        if (!trail) {
+            return;
+        }
+
+        const segments = window.location.pathname
+            .split('/')
+            .filter(Boolean);
+
+        if (segments.length === 0) {
+            return;
+        }
+
+        let cumulativePath = '';
+
+        segments.forEach((segment, index) => {
+
+            cumulativePath += '/' + segment;
+
+            const sep = document.createElement('span');
+            sep.className = 'crumb-sep';
+            sep.textContent = '/';
+
+            trail.appendChild(sep);
+
+            if (index === segments.length - 1) {
+
+                const current = document.createElement('span');
+
+                current.className = 'crumb-current';
+                current.textContent = formatBreadcrumbLabel(segment);
+
+                trail.appendChild(current);
+
+                return;
+            }
+
+            const link = document.createElement('a');
+
+            link.className = 'crumb-link';
+            link.href = cumulativePath + '/';
+            link.textContent = formatBreadcrumbLabel(segment);
+
+            trail.appendChild(link);
+        });
+    }
+
+    const sidebar = document.getElementById('appSidebar');
+    const toggle = document.getElementById('sidebarToggle');
+
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
+
+    document.querySelectorAll('.side-nav .nav-link').forEach((link) => {
+
+        link.addEventListener('click', () => {
+
+            if (window.innerWidth <= 860 && sidebar) {
+                sidebar.classList.remove('open');
+            }
+        });
+    });
+
+    function applyThemeToggleState() {
+
+        const toggleBtn = document.getElementById('themeToggle');
+
+        if (!toggleBtn) {
+            return;
+        }
+
+        const currentTheme =
+            document.documentElement.getAttribute('data-theme');
+
+        toggleBtn.textContent =
+            currentTheme === 'light'
+                ? 'Switch to Dark Mode'
+                : 'Switch to Light Mode';
+    }
+
+    const themeToggle = document.getElementById('themeToggle');
+
+    if (themeToggle) {
+
+        applyThemeToggleState();
+
+        themeToggle.addEventListener('click', () => {
+
+            const currentTheme =
+                document.documentElement.getAttribute('data-theme');
+
+            const nextTheme =
+                currentTheme === 'dark'
+                    ? 'light'
+                    : 'dark';
+
+            document.documentElement
+                .setAttribute('data-theme', nextTheme);
+
+            localStorage.setItem('appTheme', nextTheme);
+
+            applyThemeToggleState();
+        });
+    }
+
+    buildDynamicBreadcrumbs();
+
+</script>
+
+</body>
+</html>
+

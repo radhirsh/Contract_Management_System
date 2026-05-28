@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .clause-row-high { background: rgba(239, 68, 68, 0.04); }
+    .clause-row-medium { background: rgba(245, 158, 11, 0.04); }
+</style>
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">{{ comparison.title }}</h1>
+    <div style="display:flex;gap:8px;">
+        <a class="pill-btn" href="/comparisons/{{ comparison.pk }}/export/" style="text-decoration:none;">⬇ Export CSV</a>
+        <a class="pill-btn" href="/comparisons/" style="text-decoration:none;">Back</a>
+    </div>
+</div>
+
+<!-- Header info -->
+<div class="card" style="margin-bottom:16px;">
+    <div class="kv-grid">
+        <div class="kv-card"><div class="kv-label">Contract A</div><div class="kv-value">{{ comparison.contract_left.name|default:'—' }}</div></div>
+        <div class="kv-card"><div class="kv-label">Contract B</div><div class="kv-value">{{ comparison.contract_right.name|default:comparison.external_document|default:'External Document' }}</div></div>
+        <div class="kv-card"><div class="kv-label">Created By</div><div class="kv-value">{{ comparison.exported_by.name|default:'System' }}</div></div>
+        <div class="kv-card"><div class="kv-label">Created At</div><div class="kv-value">{{ comparison.exported_at }}</div></div>
+    </div>
+</div>
+
+<!-- AI Summary -->
+{% if comparison.summary %}
+<div class="card" style="margin-bottom:16px;border-left:3px solid #6366f1;">
+    <h2 class="section-title">AI Summary</h2>
+    <p style="color:#d8e3ef;line-height:1.7;margin:0;">{{ comparison.summary }}</p>
+</div>
+{% endif %}
+
+<!-- Clause-by-clause comparison -->
+{% if clauses %}
+<div class="card">
+    <h2 class="section-title">Clause-by-Clause Analysis</h2>
+    <div class="table-wrap">
+        <table class="app-table" style="min-width:900px;">
+            <thead>
+                <tr>
+                    <th style="width:16%;">Topic</th>
+                    <th style="width:28%;">Contract A</th>
+                    <th style="width:28%;">Contract B</th>
+                    <th style="width:10%;">Deviation</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clause in clauses %}
+                <tr{% if clause.deviation == 'High' %} class="clause-row-high"{% elif clause.deviation == 'Medium' %} class="clause-row-medium"{% endif %}>
+                    <td style="font-weight:700;color:#a5b4fc;">{{ clause.topic }}</td>
+                    <td style="color:#e2e8f0;">{{ clause.left }}</td>
+                    <td style="color:#e2e8f0;">{{ clause.right }}</td>
+                    <td>
+                        {% if clause.deviation == 'High' %}
+                            <span class="badge badge-risk-high">High</span>
+                        {% elif clause.deviation == 'Medium' %}
+                            <span class="badge badge-risk-medium">Medium</span>
+                        {% elif clause.deviation == 'Low' %}
+                            <span class="badge badge-risk-low">Low</span>
+                        {% else %}
+                            <span class="badge" style="background:var(--border);color:#64748b;">None</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:#94a3b8;font-size:13px;">{{ clause.notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="panel-note">No clause-by-clause data available for this comparison.</div>
+</div>
+{% endif %}
+{% endblock %}
+

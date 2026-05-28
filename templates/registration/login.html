@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ContractOS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body class="login-bg">
+    <nav class="auth-breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Dashboard</a>
+        <span>/</span>
+        <button type="button" onclick="window.history.back();">Back</button>
+        <span>/</span>
+        <span class="crumb-current">Login</span>
+    </nav>
+    <div class="login-wrapper">
+        <div class="login-branding" aria-hidden="true">
+            <div class="brand-overlay">
+                <h1>ContractOS</h1>
+                <p>
+                    Secure Contract Management Platform for Enterprises, Legal Teams, and Vendors.
+                </p>
+                <ul class="feature-list">
+                    <li>Smart Contract Tracking</li>
+                    <li>Workflow Automation</li>
+                    <li>Secure Document Storage</li>
+                    <li>Real-time Notifications</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to continue to your dashboard</p>
+            </div>
+
+            {% if form.errors %}
+                <div class="login-error">Invalid username or password. Please try again.</div>
+            {% endif %}
+
+            <form method="post" class="login-form" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                <div class="form-group">
+                    <label for="id_username">Username or Email</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="id_username"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        placeholder="you@example.com"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="id_password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="Enter your password"
+                    >
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-login">Sign In</button>
+                    <a href="{% url 'register' %}" class="btn-register">Create Account</a>
+                </div>
+            </form>
+
+            <div class="login-footer">
+                <p>&copy; 2026 ContractOS. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

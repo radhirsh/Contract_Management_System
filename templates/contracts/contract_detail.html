@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">{{ contract.name }}</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a class="pill-btn" href="{% url 'contract_edit' contract.id %}" style="text-decoration:none;">Edit</a>
+        {% if contract.file %}<a class="pill-btn" href="{% url 'contract_workbench_contract' contract.id %}" style="text-decoration:none;">Workbench</a>{% endif %}
+        {% if contract.file %}<a class="pill-btn" href="{% url 'contract_view_document' contract.id %}" target="_blank" style="text-decoration:none;">📄 View Document</a>{% endif %}
+        {% if contract.file %}<a class="pill-btn" href="{% url 'contract_download' contract.id %}" style="text-decoration:none;">⬇ Download</a>{% endif %}
+        <form method="post" action="{% url 'redline_run_ai' contract.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="quick-action" onclick="this.innerText='Running AI…';this.disabled=true;">Run AI Redline</button>
+        </form>
+    </div>
+
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card" style="margin-bottom:16px;">
+    <h2 class="section-title">Contract Details</h2>
+    <div class="kv-grid">
+        <div class="kv-card"><div class="kv-label">Contract ID</div><div class="kv-value">{{ contract.id }}</div></div>
+        <div class="kv-card"><div class="kv-label">Vendor</div><div class="kv-value">{{ contract.vendor }}</div></div>
+        <div class="kv-card"><div class="kv-label">Expiry Date</div><div class="kv-value">{{ contract.expiry }}</div></div>
+        <div class="kv-card"><div class="kv-label">Version</div><div class="kv-value">{{ contract.version }}</div></div>
+        <div class="kv-card"><div class="kv-label">Status</div><div class="kv-value"><span class="badge badge-status-{{ contract.status|lower }}">{{ contract.status }}</span></div></div>
+        <div class="kv-card"><div class="kv-label">Risk Level</div><div class="kv-value"><span class="badge badge-risk-{{ contract.risk|lower }}">{{ contract.risk }}</span></div></div>
+        <div class="kv-card"><div class="kv-label">Redlines</div><div class="kv-value">{{ contract.redlines }}</div></div>
+        <div class="kv-card"><div class="kv-label">Clauses</div><div class="kv-value">{{ contract.clauses }}</div></div>
+        <div class="kv-card"><div class="kv-label">Uploaded</div><div class="kv-value">{{ contract.uploaded }}</div></div>
+    </div>
+</div>
+
+<!-- Redline Suggestions -->
+<div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 class="section-title" style="margin:0;">Redline Suggestions ({{ unsatisfied_conditions|length }})</h2>
+        <a href="{% url 'redline_recommendations' %}?contract={{ contract.id }}" class="pill-btn" style="text-decoration:none;font-size:12px;">View All</a>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button type="button" id="tabSatisfiedBtn" class="pill-btn" style="border-color:#10b981;color:#10b981;">Satisfied ({{ satisfied_conditions|length }})</button>
+        <button type="button" id="tabUnsatisfiedBtn" class="pill-btn" style="border-color:#ef4444;color:#ef4444;">Unsatisfied ({{ unsatisfied_conditions|length }})</button>
+    </div>
+
+    <div id="tabSatisfiedPanel" class="table-wrap">
+    {% if satisfied_conditions %}
+        <table class="app-table">
+            <thead><tr><th>Issue</th><th>Risk</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for s in satisfied_conditions %}
+                <tr>
+                    <td style="font-weight:600;">{{ s.issue|truncatechars:60 }}</td>
+                    <td><span class="badge badge-risk-{{ s.risk|lower }}">{{ s.risk }}</span></td>
+                    <td><span class="badge badge-success">Satisfied</span></td>
+                    <td style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                        <button type="button" class="action-btn action-btn-view open-redline-view"
+                            data-pk=""
+                            data-issue="{{ s.issue|escape }}"
+                            data-risk="{{ s.risk }}"
+                            data-status="Satisfied"
+                            data-recommendation="Condition satisfied in contract text."
+                            data-standard="{{ s.standard_rule|escape }}"
+                            data-restricted="{{ s.restricted_terms|escape }}"
+                            data-deviation="{{ s.deviation_rule|escape }}"
+                            data-ai="{{ s.ai_recommendation|escape }}"
+                            data-reason="{{ s.reason|escape }}"
+                            data-comment=""
+                            data-source-page="{{ s.source_page_no|default:'' }}"
+                            data-source-line="{{ s.source_line_no|default:'' }}"
+                            data-source-text="{{ s.source_quote|escape }}">View</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+    <div class="panel-note">No satisfied conditions found yet.</div>
+    {% endif %}
+    </div>
+
+    <div id="tabUnsatisfiedPanel" class="table-wrap" style="display:none;">
+    {% if unsatisfied_conditions %}
+        <table class="app-table">
+            <thead><tr><th>Issue</th><th>Risk</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for u in unsatisfied_conditions %}
+                <tr>
+                    <td style="font-weight:600;">{{ u.issue|truncatechars:60 }}</td>
+                    <td><span class="badge badge-risk-{{ u.risk|lower }}">{{ u.risk }}</span></td>
+                    <td><span class="badge badge-status-{{ u.status|lower }}">{{ u.status }}</span></td>
+                    <td style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                        <button type="button" class="action-btn action-btn-view open-redline-view"
+                            data-pk="{{ u.redline_id|default:'' }}"
+                            data-issue="{{ u.issue|escape }}"
+                            data-risk="{{ u.risk }}"
+                            data-status="{{ u.status }}"
+                            data-recommendation="{{ u.recommendation|escape }}"
+                            data-standard="{{ u.standard_rule|escape }}"
+                            data-restricted="{{ u.restricted_terms|escape }}"
+                            data-deviation="{{ u.deviation_rule|escape }}"
+                            data-ai="{{ u.ai_recommendation|escape }}"
+                            data-reason="{{ u.reason|escape }}"
+                            data-comment=""
+                            data-source-page="{{ u.source_page_no|default:'' }}"
+                            data-source-line="{{ u.source_line_no|default:'' }}"
+                            data-source-text="{{ u.source_quote|escape }}">View</button>
+                        {% if u.status == 'Open' and u.redline_id %}
+                        <form method="post" action="{% url 'redline_update_status' u.redline_id %}" style="display:inline-flex;gap:4px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'contract_detail' contract.id %}">
+                            <button name="status" value="Accepted" class="action-btn action-btn-edit" style="font-size:11px;padding:3px 8px;">Accept</button>
+                            <button name="status" value="Rejected" class="action-btn action-btn-delete" style="font-size:11px;padding:3px 8px;">Reject</button>
+                        </form>
+                        {% else %}
+                        <span style="color:#64748b;font-size:12px;">{{ u.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+    <div class="panel-note">No unsatisfied conditions found. Run AI Redline to re-check this contract.</div>
+    {% endif %}
+    </div>
+</div>
+
+<!-- Redline Detail Modal -->
+<dialog id="redlineViewModal" style="max-width:620px;width:96%;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);border-radius:14px;padding:0;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:15px;" id="rvmIssue">Redline Detail</strong>
+        <button id="closeRvm" type="button" class="pill-btn">✕ Close</button>
+    </div>
+    <div style="padding:18px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="kv-card"><div class="kv-label">Risk Level</div><div class="kv-value" id="rvmRisk">—</div></div>
+            <div class="kv-card"><div class="kv-label">Status</div><div class="kv-value" id="rvmStatus">—</div></div>
+        </div>
+        <div class="kv-card" id="rvmReasonWrap"><div class="kv-label">Reason</div><div class="kv-value" id="rvmReason" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card" style="background:rgba(251,191,36,0.10);border:1px solid rgba(251,191,36,0.35);"><div class="kv-label">⚠ Issue / Recommendation</div><div class="kv-value" id="rvmRecommendation" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Standard Rule / Value</div><div class="kv-value" id="rvmStandard" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Restricted Terms / Conditions</div><div class="kv-value" id="rvmRestricted" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Deviation Rule</div><div class="kv-value" id="rvmDeviation" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);"><div class="kv-label">🤖 AI Recommendation</div><div class="kv-value" id="rvmAI" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);"><div class="kv-label">Document Source Line</div><div class="kv-value" id="rvmSource" style="white-space:pre-wrap;">Not found in document text.</div></div>
+        <div class="kv-card" id="rvmCommentWrap"><div class="kv-label">Reviewer Comment</div><div class="kv-value" id="rvmComment" style="white-space:pre-wrap;">—</div></div>
+    </div>
+</dialog>
+<script>
+document.querySelectorAll('.open-redline-view').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('rvmIssue').textContent = btn.dataset.issue || 'Redline Detail';
+        document.getElementById('rvmRisk').innerHTML = `<span class="badge badge-risk-${(btn.dataset.risk||'').toLowerCase()}">${btn.dataset.risk||'—'}</span>`;
+        document.getElementById('rvmStatus').innerHTML = `<span class="badge badge-status-${(btn.dataset.status||'').toLowerCase()}">${btn.dataset.status||'—'}</span>`;
+        const reason = btn.dataset.reason || '';
+        document.getElementById('rvmReason').textContent = reason || '—';
+        document.getElementById('rvmReasonWrap').style.display = reason ? '' : 'none';
+        document.getElementById('rvmRecommendation').textContent = btn.dataset.recommendation || '—';
+        document.getElementById('rvmStandard').textContent = btn.dataset.standard || '—';
+        document.getElementById('rvmRestricted').textContent = btn.dataset.restricted || '—';
+        document.getElementById('rvmDeviation').textContent = btn.dataset.deviation || '—';
+        document.getElementById('rvmAI').textContent = btn.dataset.ai || '—';
+        const srcPage = btn.dataset.sourcePage || '';
+        const srcLine = btn.dataset.sourceLine || '';
+        const srcText = btn.dataset.sourceText || '';
+        const sourceDisplay = srcText
+            ? `${srcPage ? `Page ${srcPage} | ` : ''}${srcLine ? `Line ${srcLine}: ` : ''}${srcText}`
+            : 'Not found in document text. This suggestion came from clause repository fallback.';
+        document.getElementById('rvmSource').textContent = sourceDisplay;
+        const comment = btn.dataset.comment || '';
+        document.getElementById('rvmComment').textContent = comment || '—';
+        document.getElementById('rvmCommentWrap').style.display = comment ? '' : 'none';
+        document.getElementById('redlineViewModal').showModal();
+    });
+});
+document.getElementById('closeRvm').addEventListener('click', () => document.getElementById('redlineViewModal').close());
+
+const tabSatisfiedBtn = document.getElementById('tabSatisfiedBtn');
+const tabUnsatisfiedBtn = document.getElementById('tabUnsatisfiedBtn');
+const tabSatisfiedPanel = document.getElementById('tabSatisfiedPanel');
+const tabUnsatisfiedPanel = document.getElementById('tabUnsatisfiedPanel');
+
+function setRedlineTab(name) {
+    const isSatisfied = name === 'satisfied';
+    tabSatisfiedPanel.style.display = isSatisfied ? '' : 'none';
+    tabUnsatisfiedPanel.style.display = isSatisfied ? 'none' : '';
+
+    tabSatisfiedBtn.style.background = isSatisfied ? 'rgba(16,185,129,0.12)' : 'transparent';
+    tabUnsatisfiedBtn.style.background = isSatisfied ? 'transparent' : 'rgba(239,68,68,0.12)';
+}
+
+tabSatisfiedBtn.addEventListener('click', () => setRedlineTab('satisfied'));
+tabUnsatisfiedBtn.addEventListener('click', () => setRedlineTab('unsatisfied'));
+</script>
+
+<!-- Version History -->
+<div class="card" style="margin-bottom:16px;">
+    <h2 class="section-title">Version History</h2>
+    {% for v in contract_versions %}
+    <div class="row-item">
+        <div>
+            <div style="font-size:13px;font-weight:600;">{{ v.version }}</div>
+            <div class="subline">{{ v.uploaded }} · {{ v.id }}</div>
+        </div>
+        {% if v.id == contract.id %}
+        <span class="badge badge-success">Current</span>
+        {% else %}
+        <a class="table-link" href="/contracts/{{ v.id }}/">Open</a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="panel-note">No version history available.</div>
+    {% endfor %}
+</div>
+
+<!-- Activity Log -->
+<div class="card">
+    <h2 class="section-title">Activity Log</h2>
+    {% for log in audit_logs %}
+    <div class="row-item">
+        <div>
+            <div style="font-size:13px;font-weight:600;">{{ log.action }}</div>
+            <div class="subline">{{ log.user.name|default:'System' }} · {{ log.ip }}</div>
+        </div>
+        <div class="subline">{{ log.time|timesince }} ago</div>
+    </div>
+    {% empty %}
+    <div class="panel-note">No activity recorded for this contract yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
+

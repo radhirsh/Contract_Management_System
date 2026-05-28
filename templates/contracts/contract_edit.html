@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Edit Contract</h1>
+    <a class="pill-btn" href="{% url 'contract_detail' contract.id %}" style="text-decoration:none;">Back to Details</a>
+</div>
+
+<div class="card" style="max-width:600px;margin:0 auto;">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="wb-grid">
+            <div class="wb-field wb-full">
+                <label>Contract Name *</label>
+                {{ form.name }}
+                {% for e in form.name.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Vendor / Party *</label>
+                {{ form.vendor }}
+                {% for e in form.vendor.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Expiry Date *</label>
+                {{ form.expiry }}
+                {% for e in form.expiry.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Risk Level</label>
+                {{ form.risk }}
+                {% for e in form.risk.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Status</label>
+                {{ form.status }}
+                {% for e in form.status.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Version</label>
+                {{ form.version }}
+                {% for e in form.version.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="wb-field">
+                <label>Clause Count</label>
+                {{ form.clauses }}
+                {% for e in form.clauses.errors %}<span class="wb-error">{{ e }}</span>{% endfor %}
+            </div>
+        </div>
+        {% if form.non_field_errors %}
+        <div class="wb-error" style="margin-top:8px;">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+        <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button type="submit" class="btn-primary" style="padding:12px 28px;font-size:15px;">
+                Save Changes
+            </button>
+            <a href="{% url 'contract_detail' contract.id %}" class="pill-btn" style="text-decoration:none;padding:12px 20px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

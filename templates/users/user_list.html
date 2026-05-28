@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">User Management</h1>
+    <a class="quick-action" href="/register/" style="text-decoration:none;">+ Add User</a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card table-wrap">
+    <table class="app-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_obj in users %}
+            <tr>
+                <td style="font-weight:600;">{{ user_obj.name }}</td>
+                <td>{{ user_obj.email }}</td>
+                <td>{{ user_obj.role }}</td>
+                <td><span class="badge badge-status-{{ user_obj.status|lower }}">{{ user_obj.status }}</span></td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <a class="pill-btn" href="/users/{{ user_obj.pk }}/edit/" style="text-decoration:none;font-size:11px;padding:3px 8px;">Edit</a>
+                    {% if user_obj.pk != request.user.pk %}
+                    <form method="post" action="/users/{{ user_obj.pk }}/toggle-status/" style="display:inline;">
+                        {% csrf_token %}
+                        {% if user_obj.status == 'Active' %}
+                        <button type="submit" class="pill-btn" style="color:#f59e0b;font-size:11px;padding:3px 8px;">Disable</button>
+                        {% else %}
+                        <button type="submit" class="pill-btn" style="color:#22c55e;font-size:11px;padding:3px 8px;">Enable</button>
+                        {% endif %}
+                    </form>
+                    {% else %}
+                    <span class="subline" style="font-size:11px;padding:3px 0;">(You)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="panel-note">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

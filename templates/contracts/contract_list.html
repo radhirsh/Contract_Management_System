@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">All Contracts</h1>
+    <a class="quick-action" href="/contracts/upload/" style="text-decoration:none;">+ Upload Contract</a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;">
+    <input name="q" type="text" value="{{ q }}" placeholder="Search by name, vendor, or ID…"
+        style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 14px;font-size:14px;min-width:220px;">
+    <select name="risk" style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 12px;font-size:14px;">
+        <option value="">All Risks</option>
+        <option value="High" {% if filter_risk == 'High' %}selected{% endif %}>High</option>
+        <option value="Medium" {% if filter_risk == 'Medium' %}selected{% endif %}>Medium</option>
+        <option value="Low" {% if filter_risk == 'Low' %}selected{% endif %}>Low</option>
+    </select>
+    <select name="status" style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 12px;font-size:14px;">
+        <option value="">All Statuses</option>
+        <option value="Active" {% if filter_status == 'Active' %}selected{% endif %}>Active</option>
+        <option value="Expired" {% if filter_status == 'Expired' %}selected{% endif %}>Expired</option>
+    </select>
+    <button type="submit" class="pill-btn">Filter</button>
+    {% if q or filter_risk or filter_status %}
+    <a href="/contracts/" class="pill-btn" style="text-decoration:none;">Clear</a>
+    {% endif %}
+</form>
+
+<div class="card table-wrap">
+    <table class="app-table" id="contractTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Contract Name</th>
+                <th>Vendor</th>
+                <th>Expiry</th>
+                <th>Version</th>
+                <th>Risk</th>
+                <th>Status</th>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contracts %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td style="font-weight:600;">
+                    <a class="table-link" href="{% url 'contract_detail' c.id %}">{{ c.name }}</a>
+                </td>
+                <td>{{ c.vendor }}</td>
+                <td>{{ c.expiry }}</td>
+                <td>{{ c.version }}</td>
+                <td><span class="badge badge-risk-{{ c.risk|lower }}">{{ c.risk }}</span></td>
+                <td><span class="badge badge-status-{{ c.status|lower }}">{{ c.status }}</span></td>
+                <td>{% if c.file %}<a class="table-link" href="{% url 'contract_detail' c.id %}">View</a>{% else %}<span style="color:var(--text-muted);">—</span>{% endif %}</td>
+                <td>
+                    <div class="contract-actions">
+                        <a class="action-btn action-btn-view" href="{% url 'contract_detail' c.id %}">View</a>
+                        <a class="action-btn action-btn-edit" href="{% url 'contract_edit' c.id %}">Edit</a>
+                        <form method="post" action="{% url 'contract_delete' c.id %}" style="margin:0;display:inline-block;" onsubmit="return confirm('Delete contract {{ c.id }} - {{ c.name|escapejs }}? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn action-btn-delete" style="min-width:72px;">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="panel-note">No contracts found. <a class="table-link" href="/contracts/upload/">Upload one</a>.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;align-items:center;">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_risk %}&risk={{ filter_risk }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}" class="pill-btn" style="text-decoration:none;">← Prev</a>
+    {% endif %}
+    <span style="color:#94a3b8;font-size:14px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} total)</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_risk %}&risk={{ filter_risk }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}" class="pill-btn" style="text-decoration:none;">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+

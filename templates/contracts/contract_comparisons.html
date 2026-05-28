@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Contract Comparisons</h1>
+    <a class="quick-action" href="/comparisons/create/" style="text-decoration:none;">+ New Comparison</a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card table-wrap">
+    <table class="app-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Left Contract</th>
+                <th>Right Contract</th>
+                <th>External Doc</th>
+                <th>Exported By</th>
+                <th>Exported At</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in comparisons %}
+            <tr>
+                <td style="font-weight:600;">{{ item.title }}</td>
+                <td>{{ item.contract_left.name|default:'N/A' }}</td>
+                <td>{{ item.contract_right.name|default:'N/A' }}</td>
+                <td>{{ item.external_document|default:'N/A' }}</td>
+                <td>{{ item.exported_by.name|default:'System' }}</td>
+                <td>{{ item.exported_at }}</td>
+                <td><button type="button" class="pill-btn open-summary" data-summary="{{ item.summary|escape }}">View Summary</button></td>
+                <a class="table-link" href="/comparisons/{{ item.pk }}/" style="margin-left:8px;">Full Report</a>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="panel-note">No comparison reports available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<dialog id="summaryModal" style="max-width:700px;width:90%;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);border-radius:14px;padding:0;">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <strong>Comparison Summary</strong>
+        <button id="closeSummary" type="button" class="pill-btn">Close</button>
+    </div>
+    <div id="summaryText" style="padding:18px;line-height:1.6;color:#d8e3ef;"></div>
+</dialog>
+
+<script>
+    const summaryButtons = document.querySelectorAll('.open-summary');
+    const summaryModal = document.getElementById('summaryModal');
+    const summaryText = document.getElementById('summaryText');
+    const closeSummary = document.getElementById('closeSummary');
+
+    summaryButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (summaryText && summaryModal) {
+                summaryText.textContent = btn.getAttribute('data-summary') || '';
+                summaryModal.showModal();
+            }
+        });
+    });
+
+    if (closeSummary && summaryModal) {
+        closeSummary.addEventListener('click', () => summaryModal.close());
+    }
+</script>
+{% endblock %}
+

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">SharePoint Sync</h1>
+</div>
+
+<div class="two-col">
+    {% for config in configs %}
+    <div class="card">
+        <h2 class="section-title">Connection</h2>
+        <div class="kv-grid">
+            <div class="kv-card"><div class="kv-label">URL</div><div class="kv-value" style="font-size:12px;">{{ config.url }}</div></div>
+            <div class="kv-card"><div class="kv-label">Folder</div><div class="kv-value">{{ config.folder }}</div></div>
+            <div class="kv-card"><div class="kv-label">Auto Sync</div><div class="kv-value">{% if config.auto_sync %}<span class="badge badge-success">Enabled{% else %}<span class="badge badge-status-inactive">Disabled{% endif %}</span></div></div>
+            <div class="kv-card"><div class="kv-label">Metadata Sync</div><div class="kv-value">{% if config.meta_sync %}<span class="badge badge-success">Enabled{% else %}<span class="badge badge-status-inactive">Disabled{% endif %}</span></div></div>
+            <div class="kv-card"><div class="kv-label">Last Sync</div><div class="kv-value">{{ config.last_sync|default:'Never' }}</div></div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card"><div class="panel-note">No SharePoint configuration found.</div></div>
+    {% endfor %}
+</div>
+
+<div class="card table-wrap" style="margin-top:16px;">
+    <h2 class="section-title">Sync Logs</h2>
+    <table class="app-table" style="min-width:700px;">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Message</th>
+                <th>Config</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in sync_logs %}
+            <tr>
+                <td>{{ log.created_at }}</td>
+                <td><span class="badge {% if log.status == 'Success' %}badge-success{% elif log.status == 'Warning' %}badge-warning{% else %}badge-danger{% endif %}">{{ log.status }}</span></td>
+                <td>{{ log.message }}</td>
+                <td>{{ log.config.folder }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="panel-note">No sync logs available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

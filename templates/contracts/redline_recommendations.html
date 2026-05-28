@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Redline Recommendation Engine</h1>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="get" style="display:flex;gap:10px;margin-bottom:16px;align-items:center;">
+    <select name="contract" style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 12px;font-size:14px;">
+        <option value="">All Contracts</option>
+        {% for c in contracts_for_filter %}
+        <option value="{{ c.id }}" {% if contract_filter == c.id %}selected{% endif %}>{{ c.name|truncatechars:40 }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="pill-btn">Filter</button>
+    {% if contract_filter %}<a href="/redline/" class="pill-btn" style="text-decoration:none;">Clear</a>{% endif %}
+</form>
+
+<div class="card table-wrap">
+    <table class="app-table">
+        <thead>
+            <tr>
+                <th>Contract</th>
+                <th>Issue</th>
+                <th>Risk</th>
+                <th>Status</th>
+                <th>Standard Rule / Value</th>
+                <th>Restricted Terms / Conditions</th>
+                <th>Deviation Rule</th>
+                <th>AI Recommendation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in suggestions %}
+            <tr>
+                <td><a class="table-link" href="/contracts/{{ item.contract.id }}/">{{ item.contract.name|truncatechars:20 }}</a></td>
+                <td style="font-weight:600;max-width:160px;">{{ item.issue|truncatechars:45 }}</td>
+                <td><span class="badge badge-risk-{{ item.risk|lower }}">{{ item.risk }}</span></td>
+                <td><span class="badge badge-status-{{ item.status|lower }}">{{ item.status }}</span></td>
+                <td style="font-size:12px;color:var(--text-muted);max-width:140px;">{{ item.standard_rule|truncatechars:50|default:'—' }}</td>
+                <td style="font-size:12px;color:var(--text-muted);max-width:140px;">{{ item.restricted_terms|truncatechars:50|default:'—' }}</td>
+                <td style="font-size:12px;color:var(--text-muted);max-width:140px;">{{ item.deviation_rule|truncatechars:50|default:'—' }}</td>
+                <td style="font-size:12px;color:var(--text-muted);max-width:140px;">{{ item.ai_recommendation|truncatechars:50|default:'—' }}</td>
+                <td>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button type="button" class="action-btn action-btn-view open-redline-view"
+                            data-pk="{{ item.pk }}"
+                            data-issue="{{ item.issue|escape }}"
+                            data-risk="{{ item.risk }}"
+                            data-status="{{ item.status }}"
+                            data-recommendation="{{ item.recommendation|escape }}"
+                            data-standard="{{ item.standard_rule|escape }}"
+                            data-restricted="{{ item.restricted_terms|escape }}"
+                            data-deviation="{{ item.deviation_rule|escape }}"
+                            data-ai="{{ item.ai_recommendation|escape }}"
+                            data-comment="{{ item.reviewer_comment|escape }}"
+                            data-source-line="{{ item.source_line_no|default:'' }}"
+                            data-source-text="{{ item.source_line_text|escape|default:'' }}">View</button>
+                        {% if item.status == 'Open' %}
+                        <button type="button" class="action-btn action-btn-edit open-review"
+                            data-pk="{{ item.pk }}"
+                            data-issue="{{ item.issue|escape }}">Review</button>
+                        {% else %}
+                        <form method="post" action="/redline/{{ item.pk }}/update/" style="display:inline;">
+                            {% csrf_token %}
+                            <button name="status" value="Open" class="action-btn action-btn-view" style="font-size:11px;">Reopen</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="panel-note">No redline suggestions available. Go to a contract and click "Run AI Redline".</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Redline Detail View Modal -->
+<dialog id="redlineViewModal" style="max-width:640px;width:96%;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);border-radius:14px;padding:0;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:15px;" id="rvmIssue">Redline Detail</strong>
+        <button id="closeRvm" type="button" class="pill-btn">✕ Close</button>
+    </div>
+    <div style="padding:18px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="kv-card"><div class="kv-label">Risk Level</div><div class="kv-value" id="rvmRisk">—</div></div>
+            <div class="kv-card"><div class="kv-label">Status</div><div class="kv-value" id="rvmStatus">—</div></div>
+        </div>
+        <div class="kv-card" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.40);"><div class="kv-label">⚠ Issue / Recommendation</div><div class="kv-value" id="rvmRecommendation" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Standard Rule / Value</div><div class="kv-value" id="rvmStandard" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Restricted Terms / Conditions</div><div class="kv-value" id="rvmRestricted" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card"><div class="kv-label">Deviation Rule</div><div class="kv-value" id="rvmDeviation" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);"><div class="kv-label">🤖 AI Recommendation</div><div class="kv-value" id="rvmAI" style="white-space:pre-wrap;">—</div></div>
+        <div class="kv-card" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);"><div class="kv-label">Document Source Line</div><div class="kv-value" id="rvmSource" style="white-space:pre-wrap;">Not found in document text.</div></div>
+        <div class="kv-card" id="rvmCommentWrap"><div class="kv-label">Reviewer Comment</div><div class="kv-value" id="rvmComment" style="white-space:pre-wrap;">—</div></div>
+    </div>
+</dialog>
+
+<!-- Review Modal -->
+<dialog id="reviewModal" style="max-width:520px;width:95%;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);border-radius:14px;padding:0;">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <strong id="reviewIssueTitle">Review Suggestion</strong>
+        <button id="closeReview" type="button" class="pill-btn">Close</button>
+    </div>
+    <form id="reviewForm" method="post" action="" style="padding:18px;display:flex;flex-direction:column;gap:12px;">
+        {% csrf_token %}
+        <textarea name="reviewer_comment" placeholder="Add a reviewer comment (optional)…"
+            style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:10px;font-size:14px;min-height:80px;resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;">
+            <button name="status" value="Accepted" class="btn-primary" style="flex:1;background:#22c55e20;border:1px solid #22c55e;color:#22c55e;">✓ Accept</button>
+            <button name="status" value="Rejected" class="btn-primary" style="flex:1;background:#ef444420;border:1px solid #ef4444;color:#ef4444;">✗ Reject</button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    // View Detail Modal
+    document.querySelectorAll('.open-redline-view').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('rvmIssue').textContent = btn.dataset.issue || 'Redline Detail';
+            document.getElementById('rvmRisk').innerHTML = `<span class="badge badge-risk-${(btn.dataset.risk||'').toLowerCase()}">${btn.dataset.risk||'—'}</span>`;
+            document.getElementById('rvmStatus').innerHTML = `<span class="badge badge-status-${(btn.dataset.status||'').toLowerCase()}">${btn.dataset.status||'—'}</span>`;
+            document.getElementById('rvmRecommendation').textContent = btn.dataset.recommendation || '—';
+            document.getElementById('rvmStandard').textContent = btn.dataset.standard || '—';
+            document.getElementById('rvmRestricted').textContent = btn.dataset.restricted || '—';
+            document.getElementById('rvmDeviation').textContent = btn.dataset.deviation || '—';
+            document.getElementById('rvmAI').textContent = btn.dataset.ai || '—';
+            const srcLine = btn.dataset.sourceLine || '';
+            const srcText = btn.dataset.sourceText || '';
+            document.getElementById('rvmSource').textContent = srcLine && srcText
+                ? `Line ${srcLine}: ${srcText}`
+                : 'Not found in document text. This suggestion came from clause repository fallback.';
+            const comment = btn.dataset.comment || '';
+            document.getElementById('rvmComment').textContent = comment || '—';
+            document.getElementById('rvmCommentWrap').style.display = comment ? '' : 'none';
+            document.getElementById('redlineViewModal').showModal();
+        });
+    });
+    document.getElementById('closeRvm').addEventListener('click', () => document.getElementById('redlineViewModal').close());
+
+    // Review Modal
+    const reviewModal = document.getElementById('reviewModal');
+    const reviewForm = document.getElementById('reviewForm');
+    const reviewIssueTitle = document.getElementById('reviewIssueTitle');
+    document.querySelectorAll('.open-review').forEach(btn => {
+        btn.addEventListener('click', () => {
+            reviewForm.action = `/redline/${btn.dataset.pk}/update/`;
+            reviewIssueTitle.textContent = btn.dataset.issue;
+            reviewModal.showModal();
+        });
+    });
+    document.getElementById('closeReview').addEventListener('click', () => reviewModal.close());
+</script>
+{% endblock %}
+

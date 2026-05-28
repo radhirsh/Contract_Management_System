@@ -1,0 +1,16 @@
+Django
+psycopg2-binary
+python-dotenv
+djangorestframework
+djangorestframework-simplejwt
+django-filter
+tailwindcss
+celery
+redis
+openai
+azure-storage-blob
+azure-ai-documentintelligence
+django-storages[azure]
+azure-ai-documentintelligence 
+openai
+reportlab

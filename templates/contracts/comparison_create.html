@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Create Contract Comparison</h1>
+    <a class="pill-btn" href="/comparisons/" style="text-decoration:none;">Back</a>
+</div>
+
+{% if error %}
+<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;padding:12px 16px;border-radius:10px;margin-bottom:16px;">{{ error }}</div>
+{% endif %}
+
+<div class="card" style="max-width:700px;">
+    <div class="panel-note" style="margin-bottom:18px;">Select two contracts to compare, or select Contract A and upload an external document for Contract B. Azure OpenAI will generate a clause-by-clause analysis.</div>
+
+    <form method="post" enctype="multipart/form-data" id="compareForm">
+        {% csrf_token %}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Comparison Title *</label>
+                <input name="title" type="text" required placeholder="e.g. Vendor A vs Vendor B — Payment Terms"
+                    style="width:100%;background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 14px;font-size:14px;">
+            </div>
+
+            <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Contract A *</label>
+                <select name="contract_left" required style="width:100%;background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 12px;font-size:14px;">
+                    <option value="">— Select Contract A —</option>
+                    {% for c in contracts %}
+                    <option value="{{ c.id }}">{{ c.id }} — {{ c.name|truncatechars:50 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Contract B (select existing OR upload below)</label>
+                <select name="contract_right" id="contractRight" style="width:100%;background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 12px;font-size:14px;">
+                    <option value="">— Select existing Contract B —</option>
+                    {% for c in contracts %}
+                    <option value="{{ c.id }}">{{ c.id }} — {{ c.name|truncatechars:50 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">OR Upload External Document (PDF / DOCX)</label>
+                <input name="external_file" type="file" accept=".pdf,.docx,.doc,.txt"
+                    style="background:var(--bg-card-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-main);padding:9px 14px;font-size:14px;width:100%;">
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitBtn" onclick="this.innerText='Running AI Comparison…';this.disabled=true;">
+                Compare with Azure OpenAI
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

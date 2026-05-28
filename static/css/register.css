@@ -1,0 +1,245 @@
+:root {
+  --bg-main: #0d2a40;
+  --bg-accent: #1f4f6b;
+  --card: #ffffff;
+  --text-main: #11253a;
+  --text-subtle: #4f657a;
+  --border: #d9e4ee;
+  --accent: #e76f51;
+  --accent-dark: #cc5739;
+  --error: #be1e2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body.register-bg {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  background:
+    radial-gradient(70rem 45rem at 90% -10%, rgba(231, 111, 81, 0.25), transparent 58%),
+    radial-gradient(58rem 38rem at -10% 110%, rgba(255, 255, 255, 0.12), transparent 55%),
+    linear-gradient(135deg, var(--bg-main), var(--bg-accent));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.auth-breadcrumbs {
+  width: min(1080px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 0.9rem;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-breadcrumbs a,
+.auth-breadcrumbs button {
+  color: #ffd7cb;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.auth-breadcrumbs a:hover,
+.auth-breadcrumbs button:hover {
+  text-decoration: underline;
+}
+
+.auth-breadcrumbs .crumb-current {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.register-shell {
+  width: min(1080px, 100%);
+  min-height: 660px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  box-shadow: 0 22px 68px rgba(3, 13, 27, 0.5);
+  backdrop-filter: blur(6px);
+}
+
+.register-panel {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(160deg, rgba(8, 24, 38, 0.76), rgba(16, 47, 68, 0.88));
+}
+
+.register-panel h1 {
+  margin: 0;
+  font-size: clamp(2rem, 2.2vw, 2.6rem);
+}
+
+.register-panel p {
+  margin: 1rem 0 1.5rem;
+  color: rgba(234, 243, 251, 0.92);
+  line-height: 1.65;
+}
+
+.register-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.register-panel li {
+  position: relative;
+  padding-left: 1.4rem;
+}
+
+.register-panel li::before {
+  content: "";
+  width: 0.58rem;
+  height: 0.58rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(231, 111, 81, 0.2);
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+}
+
+.ghost-link {
+  margin-top: 2rem;
+  color: #fff;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.register-card {
+  background: var(--card);
+  color: var(--text-main);
+  padding: clamp(1.4rem, 2.8vw, 2.5rem);
+}
+
+.register-head h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2vw, 2rem);
+}
+
+.register-head p {
+  margin: 0.65rem 0 1.4rem;
+  color: var(--text-subtle);
+}
+
+.register-error {
+  background: rgba(190, 30, 45, 0.08);
+  border: 1px solid rgba(190, 30, 45, 0.24);
+  color: var(--error);
+  border-radius: 10px;
+  padding: 0.78rem 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.field {
+  margin-bottom: 0.9rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #2e4358;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f7fbff;
+  color: var(--text-main);
+  font-size: 0.98rem;
+  padding: 0.8rem 0.88rem;
+  transition: border-color 130ms ease, box-shadow 130ms ease;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: rgba(231, 111, 81, 0.75);
+  box-shadow: 0 0 0 4px rgba(231, 111, 81, 0.16);
+  background: #fff;
+}
+
+.field.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.32rem;
+  color: var(--error);
+  font-size: 0.8rem;
+}
+
+.btn-primary {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(120deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 10px 24px rgba(204, 87, 57, 0.3);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.03);
+}
+
+@media (max-width: 940px) {
+  .register-shell {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .register-panel {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body.register-bg {
+    padding: 0.75rem;
+  }
+
+  .auth-breadcrumbs {
+    font-size: 11px;
+  }
+
+  .register-panel {
+    display: none;
+  }
+
+  .field.split {
+    grid-template-columns: 1fr;
+  }
+}

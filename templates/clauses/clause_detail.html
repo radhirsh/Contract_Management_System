@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="toolbar">
+    <h1 style="margin:0;font-size:22px;font-weight:800;color:var(--text-main);">Clause Details</h1>
+    <div class="toolbar-actions">
+        <a class="pill-btn" href="/clauses/" style="text-decoration:none;">Back to Clauses</a>
+        <a class="quick-action" href="/clauses/{{ clause.id }}/edit/" style="text-decoration:none;">Edit Clause</a>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+    <h2 class="section-title">Overview</h2>
+    <div class="kv-grid">
+        <div class="kv-card"><div class="kv-label">ID</div><div class="kv-value">{{ clause.id }}</div></div>
+        <div class="kv-card"><div class="kv-label">Name</div><div class="kv-value">{{ clause.name }}</div></div>
+        <div class="kv-card"><div class="kv-label">Category</div><div class="kv-value">{{ clause.category }}</div></div>
+        <div class="kv-card"><div class="kv-label">Risk</div><div class="kv-value"><span class="badge badge-risk-{{ clause.risk_level|lower }}">{{ clause.risk_level }}</span></div></div>
+        <div class="kv-card"><div class="kv-label">Mandatory</div><div class="kv-value">{% if clause.mandatory %}Yes{% else %}No{% endif %}</div></div>
+        <div class="kv-card"><div class="kv-label">Escalation Required</div><div class="kv-value">{% if clause.escalation_required %}Yes{% else %}No{% endif %}</div></div>
+        <div class="kv-card"><div class="kv-label">Version</div><div class="kv-value">{{ clause.version }}</div></div>
+        <div class="kv-card"><div class="kv-label">Status</div><div class="kv-value"><span class="badge badge-status-{{ clause.status|lower }}">{{ clause.status }}</span></div></div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+    <h2 class="section-title">Clause Intelligence</h2>
+    <div class="kv-grid">
+        <div class="kv-card">
+            <div class="kv-label">Standard Rule / Value</div>
+            <div class="panel-note">{{ clause.standard_rule|default:"No standard rule provided" }}</div>
+        </div>
+        <div class="kv-card">
+            <div class="kv-label">Restricted Terms / Conditions</div>
+            <div class="panel-note">{{ clause.restricted_terms|default:"No restricted terms provided" }}</div>
+        </div>
+        <div class="kv-card">
+            <div class="kv-label">Deviation Rule</div>
+            <div class="panel-note">{{ clause.deviation_rule|default:"No deviation rule provided" }}</div>
+        </div>
+        <div class="kv-card">
+            <div class="kv-label">AI Recommendation</div>
+            <div class="panel-note">{{ clause.ai_recommendation|default:"No AI recommendation provided" }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
